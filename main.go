@@ -21,6 +21,7 @@ import (
 )
 
 //go:embed leader.png
+//go:embed "mao zedong propaganda music Red Sun in the Sky.mp3"
 var 嵌入文件 embed.FS
 
 var (
@@ -104,37 +105,15 @@ type 音频 struct {
 }
 
 func new音频() *音频 {
-	return &音频{路径: 找到MP3()}
-}
-
-func 找到MP3() string {
-	seen := map[string]bool{}
-	dirs := []string{}
-	if cwd, err := os.Getwd(); err == nil {
-		dirs = append(dirs, cwd)
+	data, err := 嵌入文件.ReadFile("mao zedong propaganda music Red Sun in the Sky.mp3")
+	if err != nil {
+		return &音频{}
 	}
-	if exe, err := os.Executable(); err == nil {
-		exeDir := filepath.Dir(exe)
-		dirs = append(dirs, exeDir)
-		dirs = append(dirs, filepath.Dir(exeDir)) // parent dir
+	tmpFile := filepath.Join(os.TempDir(), "cp_calc_music.mp3")
+	if err := os.WriteFile(tmpFile, data, 0644); err != nil {
+		return &音频{}
 	}
-	for _, dir := range dirs {
-		abs, _ := filepath.Abs(dir)
-		if seen[abs] {
-			continue
-		}
-		seen[abs] = true
-		entries, err := os.ReadDir(abs)
-		if err != nil {
-			continue
-		}
-		for _, e := range entries {
-			if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".mp3") {
-				return filepath.Join(abs, e.Name())
-			}
-		}
-	}
-	return ""
+	return &音频{路径: tmpFile}
 }
 
 func mci执行(命令 string) {
@@ -603,4 +582,5 @@ func main() {
 	calc := new(计算器)
 	calc.初始化()
 	calc.Run()
+	os.Remove(filepath.Join(os.TempDir(), "cp_calc_music.mp3"))
 }
