@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	_ "embed"
+	"embed"
 	"fmt"
 	"image"
 	_ "image/png"
@@ -21,7 +21,7 @@ import (
 )
 
 //go:embed leader.png
-var 主席图像数据 []byte
+var 嵌入文件 embed.FS
 
 var (
 	金色 = walk.RGB(0xFF, 0xD7, 0x00)
@@ -195,7 +195,10 @@ func (c *计算器) 初始化() {
 	winW, winH := 400, 550
 	c.btnWidth = 35
 	c.按钮字体, _ = walk.NewFont("SimSun", 10, walk.FontBold)
-	bgBitmap, _ := c.loadLeaderImage()
+	bgBitmap, err := c.loadLeaderImage()
+	if err != nil {
+		log.Printf("Ошибка загрузки изображения: %v", err)
+	}
 
 	肖像文本 := `     ╔══════════════╗
      ║   毛泽东     ║
@@ -301,7 +304,11 @@ func (c *计算器) 初始化() {
 }
 
 func (c *计算器) loadLeaderImage() (*walk.Bitmap, error) {
-	img, _, err := image.Decode(bytes.NewReader(主席图像数据))
+	data, err := 嵌入文件.ReadFile("leader.png")
+	if err != nil {
+		return nil, err
+	}
+	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
