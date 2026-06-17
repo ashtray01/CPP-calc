@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
+	"image"
+	_ "image/png"
 	"log"
 	"math"
 	"os"
@@ -15,6 +19,9 @@ import (
 	. "github.com/lxn/walk/declarative"
 	"golang.org/x/sys/windows"
 )
+
+//go:embed leader.png
+var 主席图像数据 []byte
 
 var (
 	金色 = walk.RGB(0xFF, 0xD7, 0x00)
@@ -171,7 +178,8 @@ type 计算器 struct {
 	统计面板 *walk.Composite
 	按钮面板 *walk.Composite
 
-	音频 *音频
+	音频     *音频
+	按钮字体 *walk.Font
 
 	btnWidth int
 }
@@ -185,7 +193,8 @@ func (c *计算器) 初始化() {
 	c.输入开始 = true
 
 	winW, winH := 400, 550
-	c.btnWidth = 100
+	c.btnWidth = 35
+	c.按钮字体, _ = walk.NewFont("SimSun", 10, walk.FontBold)
 	bgBitmap, _ := c.loadLeaderImage()
 
 	肖像文本 := `     ╔══════════════╗
@@ -292,31 +301,33 @@ func (c *计算器) 初始化() {
 }
 
 func (c *计算器) loadLeaderImage() (*walk.Bitmap, error) {
-	exeDir := filepath.Dir(os.Args[0])
-	for _, dir := range []string{exeDir, ".", filepath.Dir(exeDir)} {
-		bgPath := filepath.Join(dir, "leader.png")
-		if _, err := os.Stat(bgPath); err == nil {
-			return walk.NewBitmapFromFile(bgPath)
-		}
+	img, _, err := image.Decode(bytes.NewReader(主席图像数据))
+	if err != nil {
+		return nil, err
 	}
-	// fallback
-	return nil, fmt.Errorf("leader.png not found")
+	return walk.NewBitmapFromImage(img)
+}
+
+func (c *计算器) 创建按钮(文本 string, 大小 Size, 点击 func()) CustomWidget {
+	return CustomWidget{
+		MinSize:       大小,
+		MaxSize:       大小,
+		StretchFactor: 0,
+		PaintMode:     PaintNoErase,
+		Paint: func(canvas *walk.Canvas, bounds walk.Rectangle) error {
+			return canvas.DrawText(文本, c.按钮字体, 金色, bounds, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
+		},
+		OnMouseDown: func(x, y int, button walk.MouseButton) {
+			点击()
+		},
+	}
 }
 
 func (c *计算器) 创建按钮行(文本列表 ...string) Composite {
 	var children []Widget
 	for _, t := range 文本列表 {
 		bt := t
-		children = append(children, Label{
-			Text:          bt,
-			Font:          simsun(10, true),
-			TextColor:     金色,
-			MinSize:       Size{c.btnWidth, 28},
-			MaxSize:       Size{c.btnWidth, 28},
-			StretchFactor: 0,
-			Alignment:     AlignHCenterVCenter,
-			OnMouseDown:   func(x, y int, button walk.MouseButton) { c.处理按钮点击(bt) },
-		})
+		children = append(children, c.创建按钮(bt, Size{c.btnWidth, 28}, func() { c.处理按钮点击(bt) }))
 	}
 	return Composite{
 		Layout:   HBox{Spacing: 0, MarginsZero: true},
@@ -329,9 +340,9 @@ func (c *计算器) 创建最后行() Composite {
 	return Composite{
 		Layout: HBox{Spacing: 0, MarginsZero: true},
 		Children: []Widget{
-			Label{Text: "清除", Font: simsun(16, true), TextColor: 金色, MinSize: Size{b*2 + 3, 45}, MaxSize: Size{b*2 + 3, 45}, StretchFactor: 0, Alignment: AlignHCenterVCenter, OnMouseDown: func(x, y int, button walk.MouseButton) { c.执行清除() }},
-			Label{Text: "←", Font: simsun(16, true), TextColor: 金色, MinSize: Size{b, 45}, MaxSize: Size{b, 45}, StretchFactor: 0, Alignment: AlignHCenterVCenter, OnMouseDown: func(x, y int, button walk.MouseButton) { c.删除() }},
-			Label{Text: "主席", Font: simsun(16, true), TextColor: 金色, MinSize: Size{b, 45}, MaxSize: Size{b, 45}, StretchFactor: 0, Alignment: AlignHCenterVCenter, OnMouseDown: func(x, y int, button walk.MouseButton) { c.切换主席模式() }},
+			c.创建按钮("清除", Size{b*2 + 3, 28}, c.执行清除),
+			c.创建按钮("←", Size{b, 28}, c.删除),
+			c.创建按钮("主席", Size{b, 28}, c.切换主席模式),
 		},
 	}
 }
