@@ -1,107 +1,106 @@
-# 🇨🇳 People's Republic of China Super Calculator v1.0
+# 🇨🇳 中华人民共和国超级计算器 v1.0
 
-**Codename: 红龙 (Red Dragon)** 🐉
+**代号: 红龙** 🐉
 
 ---
 
-## 🧮 About
+## 🧮 简介
 
-A calculator with a fully Chinese-themed interface.  
-Enter numbers using Chinese digits, and the program calculates and displays the result in Chinese digits too.
+一款完全中文化界面的超级计算器。  
+使用中文数字输入，计算结果显示也是中文数字。
 
-**Example:**
+**示例:**
 
 ```
-  一二三
+   一二三
 + 四五六
 = 五七九
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 快速启动
 
-### Option 1 — Prebuilt binary
+### 方式一 — 直接运行
 
 ```bash
 cd dist/
 ./习近平计算器.exe
 ```
 
-### Option 2 — From source (Python 3 required)
+### 方式二 — 源码运行（需安装 Go）
 
 ```bash
-pip install pillow pygame
-python3 计算器.py
+go build -o 习近平计算器.exe .
+./习近平计算器.exe
 ```
 
 ---
 
-## 🎮 How to Use
+## 🎮 使用说明
 
-### Buttons
+### 按钮
 
-| Button | Action |
+| 按钮 | 功能 |
 |--------|--------|
-| **七** **八** **九** … **零** | Enter Chinese digits |
-| **＋** | Addition |
-| **−** | Subtraction |
-| **×** | Multiplication |
-| **÷** | Division |
-| **＝** | Calculate |
-| **清除** | Clear everything |
-| **←** | Delete last character |
-| **．** | Decimal point |
+| **七** **八** **九** … **零** | 输入中文数字 |
+| **＋** | 加法 |
+| **−** | 减法 |
+| **×** | 乘法 |
+| **÷** | 除法 |
+| **＝** | 计算结果 |
+| **清除** | 全部清除 |
+| **←** | 删除末位 |
+| **．** | 小数点 |
 
-### Keyboard Shortcuts
+### 键盘快捷键
 
-| Key | Action |
+| 按键 | 功能 |
 |---------|----------|
-| `+` `-` `*` `/` | Operators |
-| `一二三四五六七八九` | Enter Chinese digits directly |
-| `Enter` | Calculate |
-| `Backspace` | Delete last char |
-| `Escape` | Clear everything |
+| `+` `-` `*` `/` | 运算符 |
+| `一二三四五六七八九` | 直接输入中文数字 |
+| `Enter` | 计算结果 |
+| `Backspace` | 删除末位 |
+| `Escape` | 全部清除 |
 
-### 主席模式 (Mao Mode)
+### 主席模式
 
-Click the **主席** button — the interface turns fully red,
-a portrait of Mao Zedong appears, and **"Red Sun in the Sky" (东方红)** starts playing.
+点击 **主席** 按钮 — 界面变为全红，
+毛泽东画像出现，并播放 **《东方红》**。
 
 ---
 
-## 📁 Project Structure
+## 📁 项目结构
 
 ```
 IDKtbh/
-├── 计算器.py                              # Source code
-├── leader.jpg                             # Background image
-├── mao zedong propaganda music Red Sun in the Sky.mp3  # Mao mode music
+├── main.go                                # 源代码
+├── leader.png                             # 背景图片
+├── mao zedong propaganda music Red Sun in the Sky.mp3  # 主席模式音乐
 ├── dist/
-│   └── 习近平计算器.exe                   # Prebuilt binary (59 MB)
-└── README.md                              # This file
+│   └── 习近平计算器.exe                   # 编译好的可执行文件
+└── README.md                              # 本文件
 ```
 
 ---
 
-## 🔧 Technical Details
+## 🔧 技术细节
 
-- **Language:** Python 3
-- **GUI:** Tkinter
-- **Build system:** PyInstaller (one-file mode)
-- **Images:** Pillow (PIL)
-- **Audio:** pygame / ffplay
-- **Binary size:** ~59 MB
-- **All variables in source code are named in Chinese**
+- **语言:** Go
+- **GUI:** walk (Windows 原生控件)
+- **构建:** go build
+- **图片:** walk 原生支持
+- **音频:** ffplay (外部进程播放)
+- **所有变量名均为中文**
 
-### Requirements
+### 系统要求
 
-- **Linux x86-64** (binary)
-- **Python 3.8+** (to run from source)
-- **pygame + Pillow** (optional, for music and background image)
+- **Windows** (仅支持 Windows)
+- **Go 1.20+** (编译需要)
+- **ffplay** (可选，用于主席模式音乐)
 
 ---
 
-## 📜 License
+## 📜 许可证
 
-MIT — do whatever you want 🇨🇳🐉
+MIT — 随便你怎么搞 🇨🇳🐉
