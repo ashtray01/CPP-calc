@@ -1,3 +1,20 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temp
 __pycache__/
 build/
 *.spec
