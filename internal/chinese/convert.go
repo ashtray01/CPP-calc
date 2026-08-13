@@ -1,11 +1,4 @@
-// Package chinese implements single-digit Chinese numeral conversion.
-//
-// Each Chinese character maps to exactly one decimal digit (0–9).
-// Multi-digit Chinese numbers like 十二 (12) or 三百 (300) are NOT supported.
-//
-// Maps:
-//
-//	零→0, 一→1, 二→2, 三→3, 四→4, 五→5, 六→6, 七→7, 八→8, 九→9
+// Package chinese 提供逐位中文数字与阿拉伯数字之间的转换。
 package chinese
 
 import (
@@ -15,7 +8,7 @@ import (
 	"strings"
 )
 
-// DigitMaps — bidirectional mapping between Chinese and Arabic digits.
+// ToArabic 和 ToChinese 提供双向数字映射。
 var (
 	ToArabic = map[rune]int{
 		'零': 0, '一': 1, '二': 2, '三': 3, '四': 4,
@@ -27,88 +20,116 @@ var (
 	}
 )
 
-// ChineseDigits is the ordered list of Chinese digit runes.
+// ChineseDigits 按从零到九的顺序保存中文数字。
 var ChineseDigits = []rune{'零', '一', '二', '三', '四', '五', '六', '七', '八', '九'}
 
-// Parse converts a Chinese numeral string to an int.
-// Each character in s must be a Chinese digit (零…九).
-// Returns an error if any character is not a valid Chinese digit.
-func Parse(s string) (int, error) {
+// Parse 将不带小数点的逐位中文数字转换为整数。
+func Parse(value string) (int, error) {
+	if value == "" {
+		return 0, nil
+	}
+	sign := 1
+	value = strings.TrimSpace(value)
+	if strings.HasPrefix(value, "负") {
+		sign = -1
+		value = strings.TrimPrefix(value, "负")
+	}
+	if value == "" {
+		return 0, fmt.Errorf("缺少数字")
+	}
 	result := 0
-	for _, ch := range s {
-		if v, ok := ToArabic[ch]; ok {
-			result = result*10 + v
-		} else {
-			return 0, fmt.Errorf("invalid Chinese digit character: %c", ch)
+	for _, character := range value {
+		digit, ok := ToArabic[character]
+		if !ok {
+			return 0, fmt.Errorf("无效的中文数字：%c", character)
 		}
+		result = result*10 + digit
+	}
+	return sign * result, nil
+}
+
+// ParseFloat 将包含“负”和“点”的逐位中文数字转换为浮点数。
+func ParseFloat(value string) (float64, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, fmt.Errorf("缺少数字")
+	}
+	var builder strings.Builder
+	for index, character := range []rune(value) {
+		switch {
+		case character == '负' && index == 0:
+			builder.WriteByte('-')
+		case character == '点':
+			builder.WriteByte('.')
+		default:
+			digit, ok := ToArabic[character]
+			if !ok {
+				return 0, fmt.Errorf("无效的中文数字：%c", character)
+			}
+			builder.WriteByte(byte('0' + digit))
+		}
+	}
+	result, err := strconv.ParseFloat(builder.String(), 64)
+	if err != nil {
+		return 0, fmt.Errorf("无法解析数字：%w", err)
 	}
 	return result, nil
 }
 
-// Format converts an int to a Chinese numeral string.
-// Supports negative numbers (prefix "负").
-func Format(n int) string {
-	if n == 0 {
+// Format 将整数转换为逐位中文数字，并保留负号。
+func Format(number int) string {
+	if number == 0 {
 		return "零"
 	}
 	prefix := ""
-	if n < 0 {
+	if number < 0 {
 		prefix = "负"
-		n = -n
+		number = -number
 	}
-	var buf strings.Builder
-	for _, ch := range strconv.Itoa(n) {
-		buf.WriteRune(ToChinese[int(ch-'0')])
+	var builder strings.Builder
+	for _, character := range strconv.Itoa(number) {
+		builder.WriteRune(ToChinese[int(character-'0')])
 	}
-	return prefix + buf.String()
+	return prefix + builder.String()
 }
 
-// FormatFloat converts a float64 to a Chinese numeral string with decimal point.
-// If the value is a whole number, delegates to Format.
-// Supports negative numbers (prefix "负").
-// NaN and Inf are returned as literal strings.
-func FormatFloat(f float64) string {
-	if math.IsNaN(f) {
+// FormatFloat 将浮点数转换为最多十位小数的中文显示文本。
+func FormatFloat(number float64) string {
+	if math.IsNaN(number) {
 		return "NaN"
 	}
-	if math.IsInf(f, 1) {
+	if math.IsInf(number, 1) {
 		return "Inf"
 	}
-	if math.IsInf(f, -1) {
+	if math.IsInf(number, -1) {
 		return "负Inf"
 	}
-	if f == 0 {
+	if number == 0 {
 		return "零"
 	}
-	if f == math.Trunc(f) {
-		return Format(int(f))
+	if IsWhole(number) && number <= float64(math.MaxInt) && number >= float64(math.MinInt) {
+		return Format(int(number))
 	}
-	prefix := ""
-	if f < 0 {
-		prefix = "负"
-		f = -f
-	}
-	intPart := int(math.Floor(f))
-	fracPart := f - math.Floor(f)
 
-	result := Format(intPart) + "点"
-	fracStr := fmt.Sprintf("%.10f", fracPart)
-	fracStr = strings.TrimRight(fracStr, "0")
-	fracStr = strings.TrimLeft(fracStr, "0.")
-	for _, ch := range fracStr {
-		result += string(ToChinese[int(ch-'0')])
+	prefix := ""
+	if number < 0 {
+		prefix = "负"
+		number = -number
 	}
-	return prefix + result
+	decimal := strconv.FormatFloat(number, 'f', 10, 64)
+	decimal = strings.TrimRight(strings.TrimRight(decimal, "0"), ".")
+	var builder strings.Builder
+	for _, character := range decimal {
+		if character == '.' {
+			builder.WriteRune('点')
+			continue
+		}
+		builder.WriteRune(ToChinese[int(character-'0')])
+	}
+	return prefix + builder.String()
 }
 
-// IsWhole reports whether f is a whole number representable as int
-// without precision loss. Uses a safe epsilon-based comparison for
-// values within the int64 range, and falls back to Trunc comparison
-// for larger values (which may have floating-point precision limits).
-func IsWhole(f float64) bool {
-	const maxSafeInt = 1 << 53 // 2^53 — точный диапазон float64 для целых
-	if f > maxSafeInt || f < -maxSafeInt {
-		return f == math.Trunc(f)
-	}
-	return f == float64(int(f))
+// IsWhole 判断浮点数是否为有限整数。
+func IsWhole(number float64) bool {
+	return !math.IsNaN(number) && !math.IsInf(number, 0) && number == math.Trunc(number)
 }

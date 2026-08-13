@@ -1,15 +1,9 @@
-// Package assets provides embedded binary resources (image, music).
-//
-// Files are embedded into the binary at compile time via //go:embed.
+// Package assets 提供编译进可执行文件的照片和音乐资源。
 package assets
 
 import "embed"
 
-// FS contains all embedded project assets.
-//
-// Available files:
-//   - leader.png       — фоновое изображение с портретом Мао Цзэдуна
-//   - music.mp3        — «Красное солнце в небе» (东方红)
+// FS 包含主席照片 leader.png 和主席模式音乐 music.mp3。
 //
 //go:embed leader.png
 //go:embed music.mp3

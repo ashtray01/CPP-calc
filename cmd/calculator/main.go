@@ -1,13 +1,7 @@
-// Command calculator — 中华人民共和国超级计算器
-//
-// A Chinese-language desktop calculator with Chairman Mao Zedong theme mode.
-// Built with lxn/walk native Windows UI toolkit.
+// Command calculator 是中文桌面计算器的程序入口。
 package main
 
 import (
-	"os"
-	"path/filepath"
-
 	"calculator/internal/ui"
 
 	"golang.org/x/sys/windows"
@@ -15,13 +9,8 @@ import (
 
 func main() {
 	shcore := windows.NewLazySystemDLL("shcore.dll")
-	procSetDPI := shcore.NewProc("SetProcessDpiAwareness")
-	procSetDPI.Call(1) // PROCESS_PER_MONITOR_DPI_AWARE
+	setDPIAwareness := shcore.NewProc("SetProcessDpiAwareness")
+	setDPIAwareness.Call(1) // 启用按显示器缩放，避免高分屏界面模糊。
 
-	calc := ui.New()
-	calc.Run()
-
-	// Cleanup temp music file on normal exit
-	tmpFile := filepath.Join(os.TempDir(), "cp_calc_music.mp3")
-	os.Remove(tmpFile)
+	ui.New().Run()
 }
