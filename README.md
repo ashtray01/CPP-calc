@@ -1,3 +1,5 @@
+![中文计算器界面](Screenshot_1.jpg)
+
 # 中华人民共和国 · 中文计算器
 
 一款面向 Windows 的现代中文桌面计算器。界面采用深红与暖金配色，所有数字以逐位中文形式输入和显示，并保留主席照片与原有背景音乐。
@@ -34,7 +36,7 @@
 环境要求：Windows、Go 1.26.1 或更高版本，以及可用的 CGO 工具链。
 
 ```powershell
-go build -buildvcs=false -o .\dist\CPP-calc.exe .\cmd\calculator
+go build -buildvcs=false -ldflags="-H=windowsgui" -o .\dist\CPP-calc.exe .\cmd\calculator
 .\dist\CPP-calc.exe
 ```
 
@@ -95,7 +97,7 @@ CPP-calc/
 ```powershell
 go test -buildvcs=false ./...
 go vet -buildvcs=false ./...
-go build -buildvcs=false -ldflags="-s -w" -o .\dist\CPP-calc.exe .\cmd\calculator
+go build -buildvcs=false -ldflags="-H=windowsgui -s -w" -o .\dist\CPP-calc.exe .\cmd\calculator
 ```
 
 当前测试覆盖整数、负数、小数、格式化和往返转换。界面截图来自实际构建后的 Windows 程序，而不是设计稿。
