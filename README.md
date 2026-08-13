@@ -4,6 +4,8 @@
 
 一款面向 Windows 的现代中文桌面计算器。界面采用深红与暖金配色，所有数字以逐位中文形式输入和显示，并保留主席照片与原有背景音乐。
 
+当前版本：**1.2** · [下载最新发布包](https://github.com/ashtray01/CPP-calc/releases/latest)
+
 ![计算器主界面](docs/interface.png)
 
 ## 主要特点
